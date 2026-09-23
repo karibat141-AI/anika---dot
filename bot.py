@@ -1,4 +1,3 @@
-Enter file contents here 
 import os
 from openai import OpenAI
 from telegram import Update
@@ -16,48 +15,29 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 
-async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if not update.message or not update.message.text:
-        return
-
+async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_text = update.message.text
 
-    try:
-        response = client.responses.create(
-            model="gpt-5.6",
-            input=[
-                {
-                    "role": "developer",
-                    "content": "Ты полезный Telegram-помощник по имени Аника. Отвечай понятно, дружелюбно и по делу."
-                },
-                {
-                    "role": "user",
-                    "content": user_text
-                }
-            ]
-        )
+    response = client.responses.create(
+        model="gpt-5-mini",
+        input=user_text
+    )
 
-        answer = response.output_text
+    answer = response.output_text
 
-        await update.message.reply_text(answer)
-
-    except Exception as e:
-        print("Ошибка:", e)
-        await update.message.reply_text(
-            "Произошла ошибка. Попробуй ещё раз."
-        )
+    await update.message.reply_text(answer)
 
 
 def main():
-    application = Application.builder().token(TELEGRAM_TOKEN).build()
+    app = Application.builder().token(TELEGRAM_TOKEN).build()
 
-    application.add_handler(CommandHandler("start", start))
-    application.add_handler(
-        MessageHandler(filters.TEXT & ~filters.COMMAND, message_handler)
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(
+        MessageHandler(filters.TEXT & ~filters.COMMAND, chat)
     )
 
-    print("Аника запущена!")
-    application.run_polling()
+    print("Бот запущен...")
+    app.run_polling()
 
 
 if __name__ == "__main__":
